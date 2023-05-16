@@ -1,0 +1,102 @@
+From 9696fe7fa3c6b8d1b254ff63db0b0e4972b5748e Mon Sep 17 00:00:00 2001
+From: Jami Kettunen <jami.kettunen@protonmail.com>
+Date: Fri, 13 May 2022 03:58:53 +0300
+Subject: [PATCH 1/2] hwcomposer: Fix compile errors under Qt 5.15
+
+Fixes build errors such as the following under Qt 5.15:
+
+  qeglfsbackingstore.cpp: In member function 'virtual void QEglFSBackingStore::flush(QWindow*, const QRegion&, const QPoint&)':
+  qeglfsbackingstore.cpp:136:5: error: 'glEnableVertexAttribArray' was not declared in this scope
+    136 |     glEnableVertexAttribArray(m_vertexCoordEntry);
+        |     ^~~~~~~~~~~~~~~~~~~~~~~~~
+
+  In file included from /usr/aarch64-linux-gnu/usr/include/qt5/QtCore/qobject.h:54,
+                   from /usr/aarch64-linux-gnu/usr/include/qt5/QtCore/qiodevice.h:45,
+                   from /usr/aarch64-linux-gnu/usr/include/qt5/QtCore/qtextstream.h:43,
+                   from /usr/aarch64-linux-gnu/usr/include/qt5/QtEglSupport/5.15.2/QtEglSupport/private/qeglplatformcontext_p.h:54,
+                   from qeglfscontext.h:50,
+                   from qeglfscontext.cpp:42:
+  /usr/aarch64-linux-gnu/usr/include/qt5/QtCore/qmetatype.h:59:2: error: #error qmetatype.h must be included before any header file that defines Bool
+     59 | #error qmetatype.h must be included before any header file that defines Bool
+        |  ^~~~~
+---
+ hwcomposer/qeglfsbackingstore.cpp | 2 ++
+ hwcomposer/qeglfscontext.cpp      | 8 +++++---
+ 2 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/hwcomposer/qeglfsbackingstore.cpp b/hwcomposer/qeglfsbackingstore.cpp
+index dc0cb84..95d0e59 100644
+--- a/hwcomposer/qeglfsbackingstore.cpp
++++ b/hwcomposer/qeglfsbackingstore.cpp
+@@ -39,6 +39,8 @@
+ **
+ ****************************************************************************/
+ 
++#include <GLES2/gl2.h>
++
+ #include "qeglfsbackingstore.h"
+ #include "qeglfswindow.h"
+ 
+diff --git a/hwcomposer/qeglfscontext.cpp b/hwcomposer/qeglfscontext.cpp
+index 027fe3a..2bee24e 100644
+--- a/hwcomposer/qeglfscontext.cpp
++++ b/hwcomposer/qeglfscontext.cpp
+@@ -39,9 +39,7 @@
+ **
+ ****************************************************************************/
+ 
+-#include "qeglfscontext.h"
+-#include "qeglfswindow.h"
+-#include "qeglfsintegration.h"
++#include <QtGlobal>
+ 
+ #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+ #include <QtGui/private/qeglpbuffer_p.h>
+@@ -54,6 +52,10 @@
+ #include <QtGui/QSurface>
+ #include <QtDebug>
+ 
++#include "qeglfscontext.h"
++#include "qeglfswindow.h"
++#include "qeglfsintegration.h"
++
+ QT_BEGIN_NAMESPACE
+ 
+ QEglFSContext::QEglFSContext(
+
+From 19710d497bbb89fa625a9aebda60239d8838a53c Mon Sep 17 00:00:00 2001
+From: Jami Kettunen <jami.kettunen@protonmail.com>
+Date: Wed, 8 Feb 2023 14:51:40 +0200
+Subject: [PATCH 2/2] hwcomposer: Silence compile warnings from
+ qsystrace_selector.h
+
+In file included from hwcomposer_backend_v11.cpp:51:
+qsystrace_selector.h: In function 'void QSystrace::begin(const char*, const char*, const char*, ...)':
+qsystrace_selector.h:48:35: warning: unused parameter 'module' [-Wunused-parameter]
+   48 |     inline void begin(const char *module, const char *tracepoint, const char *message, ...) {}
+      |                       ~~~~~~~~~~~~^~~~~~
+---
+ hwcomposer/qsystrace_selector.h | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/hwcomposer/qsystrace_selector.h b/hwcomposer/qsystrace_selector.h
+index 4b88f2c..dbb422f 100644
+--- a/hwcomposer/qsystrace_selector.h
++++ b/hwcomposer/qsystrace_selector.h
+@@ -45,12 +45,12 @@
+ // Add dummy stub methods for QSysTrace
+ namespace QSystrace
+ {
+-    inline void begin(const char *module, const char *tracepoint, const char *message, ...) {}
+-    inline void end(const char *module, const char *tracepoint, const char *message, ...) {}
+-    inline void counter(const char *module, const char *tracepoint, const char *message, ...) {}
++    inline void begin(const char */*module*/, const char */*tracepoint*/, const char */*message*/, ...) {}
++    inline void end(const char */*module*/, const char */*tracepoint*/, const char */*message*/, ...) {}
++    inline void counter(const char */*module*/, const char */*tracepoint*/, const char */*message*/, ...) {}
+ };
+ struct QSystraceEvent {
+-    QSystraceEvent(const char *module, const char *tracepoint) {}
++    QSystraceEvent(const char */*module*/, const char */*tracepoint*/) {}
+ };
+ #endif
+ 

@@ -1,0 +1,19 @@
+From: Bardia Moshiri <fakeshell@bardia.tech>
+diff -Npur a/hwcomposer/qeglfscontext.cpp b/hwcomposer/qeglfscontext.cpp
+--- a/hwcomposer/qeglfscontext.cpp	2023-05-16 18:56:12.904399282 +0000
++++ b/hwcomposer/qeglfscontext.cpp	2023-05-16 18:57:12.804235720 +0000
+@@ -43,13 +43,7 @@
+ #include "qeglfswindow.h"
+ #include "qeglfsintegration.h"
+ 
+-#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+-#include <QtGui/private/qeglpbuffer_p.h>
+-#elif (QT_VERSION >= QT_VERSION_CHECK(5, 8, 0))
+-#include <QtEglSupport/private/qeglpbuffer_p.h>
+-#else
+-#include <QtPlatformSupport/private/qeglpbuffer_p.h>
+-#endif
++#include <qt/QtEglSupport/5.15.9/QtEglSupport/private/qeglpbuffer_p.h>
+ 
+ #include <QtGui/QSurface>
+ #include <QtDebug>
